@@ -110,20 +110,17 @@ blockchain = Blockchain()
 
 @app.route('/mine', methods=['GET', 'POST'])
 def mine():
-    # Run the proof of work algorithm to get the next proof
-    proof = blockchain.proof_of_work(blockchain.last_block)
-
     # Pull the data out of the POST
     data = request.get_json()
-
     # If proof and ID present:
     if proof and id in data:
-        response = {200: "Valid proof received."}
-
+        # response = {200: "Valid proof and id received."}
+        return jsonify(response="Valid proof and id received."), 200
     # If proof or ID not present:
     elif proof or id not in data:
-        response = {400: "Please provide valid proof and id."}
-    return jsonify(response)
+        return jsonify(response="Error: Please provide valid proof and id."), 400
+    #     response = {400: "Error: Please provide valid proof and id."}
+    # return jsonify(response)
 
 
 @app.route('/chain', methods=['GET'])
