@@ -38,8 +38,6 @@ class Blockchain(object):
             'transactions': self.current_transactions,
             'proof': proof,
             'previous_hash': previous_hash
-            # If not handed in on line 17:
-            # 'previous_hash': self.hash(self.chain[-1])
         }
 
         # Reset the current list of transactions
@@ -52,29 +50,15 @@ class Blockchain(object):
     def hash(self, block):
         """
         Creates a SHA-256 hash of a Block
-
         :param block": <dict> Block
         "return": <str>
         """
-
-        # Use json.dumps to convert json into a string
-        # Use hashlib.sha256 to create a hash
-        # It requires a `bytes-like` object, which is what .encode() does.
-        # It convertes the string to bytes.
-        # We must make sure that the Dictionary is Ordered,
-        # or we'll have inconsistent hashes
-
         # CREATE the block_string
         string_object = json.dumps(block, sort_keys=True).encode()
 
         # HASH this string using sha256
         raw_hash = hashlib.sha256(string_object)
 
-        # By itself, the sha256 function returns the hash in a raw string
-        # that will likely include escaped characters.
-        # This can be hard to read, but .hexdigest() converts the
-        # hash to a string of HEXADECIMAL characters, which is
-        # easier to work with and understand
         hex_hash = raw_hash.hexdigest()
 
         # RETURN the hashed block string in hexadecimal format
@@ -85,13 +69,6 @@ class Blockchain(object):
         return self.chain[-1]
 
     # def proof_of_work(self, block):
-    #     """
-    #     Simple Proof of Work Algorithm
-    #     Stringify the block and look for a proof.
-    #     Loop through possibilities, checking each one against `valid_proof`
-    #     in an effort to find a number that is a valid proof
-    #     :return: A valid proof for the provided block
-    #     """
     #     # CREATE blockstring
     #     block_string = json.dumps(block)
     #     proof = 0
@@ -117,7 +94,7 @@ class Blockchain(object):
         guess_hash = hashlib.sha256(guess).hexdigest()
 
         # return True or False
-        # Slice hash and check if first three nums are 0s
+        # Slice hash and check if first six nums are 0s
         return guess_hash[:6] == "000000"
 
 
@@ -131,33 +108,44 @@ node_identifier = str(uuid4()).replace('-', '')
 blockchain = Blockchain()
 
 
-@app.route('/mine', methods=['GET'])
+@app.route('/mine', methods=['GET', 'POST'])
 def mine():
     # Run the proof of work algorithm to get the next proof
     proof = blockchain.proof_of_work(blockchain.last_block)
-    # Forge the new Block by adding it to the chain with the proof
-    previous_hash = blockchain.hash(blockchain.last_block)  # Get prev hash
-    block = blockchain.new_block(proof, previous_hash)
 
-    response = {
-        # Send a JSON response with the new block
-        'new_block': block
-    }
+    # Pull the data out of the POST
+    data = request.get_json()
 
-    return jsonify(response), 200
+    # If proof and ID present:
+    if proof and id in data:
+        response = {200: "Valid proof received."}
+
+    # If proof or ID not present:
+    elif proof or id not in data:
+        response = {400: "Please provide valid proof and id."}
+    return jsonify(response)
 
 
 @app.route('/chain', methods=['GET'])
 def full_chain():
     response = {
-        # TODO: Return the chain and its current length
+        # Return the chain and its current length
         'length': len(blockchain.chain),
         'chain': blockchain.chain
     }
     return jsonify(response), 200
 
 
-# Run the program on port 5000
+@app.route('/last_block', methods=['GET'])
+def get_last_block():
+    response = {
+        # Return the last block in the chain
+        'get_last_block': blockchain.last_block
+    }
+    return jsonify(response), 200
+
+
+# Run the program on port 5555
 if __name__ == '__main__':
     # set debug to true to autosave so you do not need to restart server
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5555, debug=True)
