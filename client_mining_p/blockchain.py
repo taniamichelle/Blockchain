@@ -68,15 +68,6 @@ class Blockchain(object):
     def last_block(self):
         return self.chain[-1]
 
-    # def proof_of_work(self, block):
-    #     # CREATE blockstring
-    #     block_string = json.dumps(block)
-    #     proof = 0
-    #     # Keep guessing nums until you find proof
-    #     while self.valid_proof(block_string, proof) is False:
-    #         proof += 1
-    #     return proof
-
     @staticmethod
     def valid_proof(block_string, proof):
         """
@@ -114,6 +105,13 @@ def mine():
     data = request.get_json()
     # If proof and ID present:
     if proof and id in data:
+        self.valid_proof()
+        # a valid proof should fail for all senders except the first.
+        # Run the proof of work algorithm to get the next proof
+        proof = blockchain.proof_of_work(blockchain.last_block)
+        # Forge the new Block by adding it to the chain with the proof
+        previous_hash = blockchain.hash(blockchain.last_block)  # Get prev hash
+        block = blockchain.new_block(proof, previous_hash)
         # response = {200: "Valid proof and id received."}
         return jsonify(response="Valid proof and id received."), 200
     # If proof or ID not present:
