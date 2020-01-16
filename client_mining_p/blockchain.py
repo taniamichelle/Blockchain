@@ -20,13 +20,6 @@ class Blockchain(object):
         """
         Create a new Block in the Blockchain
 
-        A block should have:
-        * Index
-        * Timestamp
-        * List of current transactions
-        * The proof used to mine this block
-        * The hash of the previous block
-
         :param proof: <int> The proof given by the Proof of Work algorithm
         :param previous_hash: (Optional) <str> Hash of previous Block
         :return: <dict> New Block
@@ -101,31 +94,28 @@ blockchain = Blockchain()
 
 @app.route('/mine', methods=['POST'])
 def mine():
-    # Pull the data out of the POST
-    data = request.get_json()
-    id = data['id']
-    new_proof = data['proof']
-    last_blockstring = json.dumps(block, sort_keys=True).encode()
-    # If proof and ID present:
-    if new_proof in data and id in data:
-        last_block = blockchain.last_block
-        if blockchain.valid_proof(last_blockstring, new_proof) is True:
-            # Run the proof of work algorithm to get the next proof
-            # Forge the new Block by adding it to the chain with the proof
-            previous_hash = blockchain.hash(last_blockstring)  # Get prev hash
-            block = blockchain.new_block(new_proof, previous_hash)
-            response = {
-                'message': "New Block Forged.",
-                'block': block
-            }
-            return jsonify(response), 200
-        else:
-            return jsonify(response="Proof or id is not valid."), 401
-    # If proof or ID not present:
-    elif new_proof not in data or id not in data:
-        return jsonify(response="Error: Please provide valid proof and id."), 400
-    #     response = {400: "Error: Please provide valid proof and id."}
-    # return jsonify(response)
+    # breakpoint()
+    required = ['proof', 'id']
+    if not all(r in data for r in required):
+        response = {'message': "Missing values."}
+        return jsonify(response), 400
+
+    last_block = blockchain.last_block
+    last_block_string = json.dumps(last_block, sort_keys=True)
+
+    if blockchain.valid_proof(last_block_string, data['proof']):
+        previous_hash = blockchain.hash(blockchain.last_block)
+        block = blockchain.new_block(data['proof'], previous_hash)
+
+        response = {
+            'message': 'New Block Forged',
+            'new_block': block
+        }
+    else:
+        response = {
+            'message': "Proof is invalid or already submitted"
+        }
+    return jsonify(response), 200
 
 
 @app.route('/chain', methods=['GET'])
@@ -139,10 +129,12 @@ def full_chain():
 
 
 @app.route('/last_block', methods=['GET'])
-def get_last_block():
+def last_block():
     response = {
         # Return the last block in the chain
-        'get_last_block': blockchain.last_block
+        'last_block': blockchain.last_block
+        # Same as: blockchain.chain[len(blockchain.chain) - 1]
+        # But we're using the helper function we wrote
     }
     return jsonify(response), 200
 
@@ -151,3 +143,32 @@ def get_last_block():
 if __name__ == '__main__':
     # set debug to true to autosave so you do not need to restart server
     app.run(host='0.0.0.0', port=5555, debug=True)
+
+'''
+MY SOLUTION:
+    @app.route('/mine', methods=['POST'])
+    def mine():
+        # Pull the data out of the POST
+        data = request.get_json()
+        id = data['id']
+        new_proof = data['proof']
+        last_blockstring = json.dumps(block, sort_keys=True)
+        # If proof and ID present:
+        if new_proof in data and id in data:
+            last_block = blockchain.last_block
+            if blockchain.valid_proof(last_blockstring, new_proof) is True:
+                # Run the proof of work algorithm to get the next proof
+                # Forge the new Block by adding it to the chain with the proof
+                previous_hash = blockchain.hash(last_blockstring)  # Get prev hash
+                block = blockchain.new_block(new_proof, previous_hash)
+                response = {
+                    'message': "New Block Forged.",
+                    'block': block
+                }
+                return jsonify(response), 200
+            else:
+                return jsonify(response="Proof or id is not valid."), 401
+        # If proof or ID not present:
+        elif new_proof not in data or id not in data:
+            return jsonify(response="Error: Please provide valid proof and id."), 400
+'''

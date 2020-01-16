@@ -14,7 +14,7 @@ def proof_of_work(block):
     :return: A valid proof for the provided block
     """
     # CREATE blockstring
-    block_string = json.dumps(block)
+    block_string = json.dumps(block, sort_keys=True)
     proof = 0
     # Keep guessing nums until you find proof
     while valid_proof(block_string, proof) is False:
@@ -49,6 +49,8 @@ if __name__ == '__main__':
     else:
         node = "http://localhost:5000"  # Else use local host 5000
 
+    coins = 0
+
     # Load ID
     f = open("my_id.txt", "r")
     id = f.read()
@@ -70,7 +72,9 @@ if __name__ == '__main__':
             break
 
         # Get the last_block from `data` and use it to look for a new_proof
-        new_proof = proof_of_work(data['last_block'])
+        last_block = data.get('last_block')   # Data is treated as a dictionary
+        new_proof = proof_of_work(last_block)
+        # breakpoint()
 
         # When found, POST it to the server {"proof": new_proof, "id": id}
         post_data = {"proof": new_proof, "id": id}
@@ -81,8 +85,8 @@ if __name__ == '__main__':
         # If the server responds with a 'message' 'New Block Forged'
         # add 1 to the number of coins mined and print it.  Otherwise,
         # print the message from the server.
-        coins = 0
-        if data['message'] == "New Block Forged.":
+
+        if data.get('message') == "New Block Forged":
             coins += 1
             print(f"You have mined: {coins} coins.")
         else:
