@@ -99,23 +99,35 @@ node_identifier = str(uuid4()).replace('-', '')
 blockchain = Blockchain()
 
 
-@app.route('/mine', methods=['GET', 'POST'])
+@app.route('/mine', methods=['POST'])
 def mine():
     # Pull the data out of the POST
     data = request.get_json()
+    id = data['id']
+    new_proof = data['proof']
+    last_blockstring = json.dumps(block)
     # If proof and ID present:
-    if proof and id in data:
-        self.valid_proof()
-        # a valid proof should fail for all senders except the first.
-        # Run the proof of work algorithm to get the next proof
-        proof = blockchain.proof_of_work(blockchain.last_block)
+    if new_proof in data and id in data:
+        last_block = blockchain.last_block
+        if blockchain.valid_proof() is True:
+            # a valid proof should fail for all senders except the first.
+            # Run the proof of work algorithm to get the next proof
+        last_proof = blockchain.proof_of_work(
+            last_blockstring, new_proof)
         # Forge the new Block by adding it to the chain with the proof
-        previous_hash = blockchain.hash(blockchain.last_block)  # Get prev hash
-        block = blockchain.new_block(proof, previous_hash)
-        # response = {200: "Valid proof and id received."}
-        return jsonify(response="Valid proof and id received."), 200
+        previous_hash = blockchain.hash(last_blockstring)  # Get prev hash
+        block = blockchain.new_block(new_proof, previous_hash)
+        response = {
+            'message': "Valid proof and id received.",
+            'index': len(blockchain.chain) + 1,
+            'timestamp': time(),
+            'transactions': blockchain.current_transactions,
+            'proof': proof,
+            'previous_hash': previous_hash
+        }
+        # return jsonify(response="Valid proof and id received."), 200
     # If proof or ID not present:
-    elif proof or id not in data:
+    elif last_block_proof not in data or id not in data:
         return jsonify(response="Error: Please provide valid proof and id."), 400
     #     response = {400: "Error: Please provide valid proof and id."}
     # return jsonify(response)

@@ -16,9 +16,8 @@ def proof_of_work(block):
     # CREATE blockstring
     block_string = json.dumps(block)
     # Keep guessing nums until you find proof
-    print("Preparing to validate proof.")
-    while self.valid_proof(block_string, proof) is False:
-        print(f"Proof: {proof} was not valid.")
+    print("Validating proof.")
+    while blockchain.valid_proof(block_string, proof) is False:
         proof += 1
     print(f"Proof: {proof} has been validated.")
     return proof
