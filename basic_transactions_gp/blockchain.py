@@ -131,6 +131,7 @@ def new_transaction():
 @app.route('/mine', methods=['POST'])
 def mine():
     # breakpoint()
+    data = request.get_json()
     required = ['proof', 'id']
     if not all(r in data for r in required):
         response = {'message': "Missing values."}
