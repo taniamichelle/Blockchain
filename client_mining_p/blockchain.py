@@ -105,29 +105,24 @@ def mine():
     data = request.get_json()
     id = data['id']
     new_proof = data['proof']
-    last_blockstring = json.dumps(block)
+    last_blockstring = json.dumps(block, sort_keys=True).encode()
     # If proof and ID present:
     if new_proof in data and id in data:
         last_block = blockchain.last_block
-        if blockchain.valid_proof() is True:
-            # a valid proof should fail for all senders except the first.
+        if blockchain.valid_proof(last_blockstring, new_proof) is True:
             # Run the proof of work algorithm to get the next proof
-        last_proof = blockchain.proof_of_work(
-            last_blockstring, new_proof)
-        # Forge the new Block by adding it to the chain with the proof
-        previous_hash = blockchain.hash(last_blockstring)  # Get prev hash
-        block = blockchain.new_block(new_proof, previous_hash)
-        response = {
-            'message': "Valid proof and id received.",
-            'index': len(blockchain.chain) + 1,
-            'timestamp': time(),
-            'transactions': blockchain.current_transactions,
-            'proof': proof,
-            'previous_hash': previous_hash
-        }
-        # return jsonify(response="Valid proof and id received."), 200
+            # Forge the new Block by adding it to the chain with the proof
+            previous_hash = blockchain.hash(last_blockstring)  # Get prev hash
+            block = blockchain.new_block(new_proof, previous_hash)
+            response = {
+                'message': "New Block Forged.",
+                'block': block
+            }
+            return jsonify(response), 200
+        else:
+            return jsonify(response="Proof or id is not valid."), 401
     # If proof or ID not present:
-    elif last_block_proof not in data or id not in data:
+    elif new_proof not in data or id not in data:
         return jsonify(response="Error: Please provide valid proof and id."), 400
     #     response = {400: "Error: Please provide valid proof and id."}
     # return jsonify(response)
