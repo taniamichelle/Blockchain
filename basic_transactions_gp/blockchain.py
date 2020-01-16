@@ -21,13 +21,6 @@ class Blockchain(object):
         """
         Create a new Block in the Blockchain
 
-        A block should have:
-        * Index
-        * Timestamp
-        * List of current transactions
-        * The proof used to mine this block
-        * The hash of the previous block
-
         :param proof: <int> The proof given by the Proof of Work algorithm
         :param previous_hash: (Optional) <str> Hash of previous Block
         :return: <dict> New Block
@@ -89,7 +82,15 @@ class Blockchain(object):
         # Slice hash and check if first six nums are 0s
         return guess_hash[:6] == "000000"
 
-    def new_transaction():
+    def new_transaction(self, sender, recipient, amount):
+        '''
+        Creates a new transaction to go into the next mined block
+
+        :param sender: <str> Name of the sender
+        :param recipient: <str>  Name of the recipient
+        :param amount <float> amount of transaction
+        :return:  <index> The index of the block that will hold the transaction
+        '''
         self.current_transactions.append({
             'sender': sender,
             'recipient': recipient,
@@ -117,14 +118,14 @@ def new_transaction():
     if not all(k in data for k in required):
         response = {'message': "Missing values."}
         return jsonify(response), 400
-    else:  # CREATE new transaction
-        index = blockchain.new_transaction(data['sender'],
-                                           data['recipient'],
-                                           data['amount'])
-        response = {
-            'message': f"Transaction will post to block {index}."
-        }
-        return jsonify(response), 201
+    # CREATE new transaction
+    index = blockchain.new_transaction(data['sender'],
+                                       data['recipient'],
+                                       data['amount'])
+    response = {
+        'message': f"Transaction will post to block {index}."
+    }
+    return jsonify(response), 201
 
 
 @app.route('/mine', methods=['POST'])
