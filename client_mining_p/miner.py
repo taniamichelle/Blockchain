@@ -43,9 +43,9 @@ def valid_proof(block_string, proof):
 
 
 if __name__ == '__main__':
-    # What is the server address? IE `python3 miner.py https://server.com/api`
-    if len(sys.argv) > 1:
-        node = sys.argv[1]
+    # What is the server address? IE `python3 miner.py https://server.com/api`. `miner.py` is at index 0
+    if len(sys.argv) > 1:  # argv = all the arguments being passed to command line
+        node = sys.argv[1]  # Refers to `https://server.com/api` which is the arg at index 1
     else:
         node = "http://localhost:5000"  # Else use local host 5000
 
@@ -59,9 +59,9 @@ if __name__ == '__main__':
 
     # Run forever until interrupted
     while True:
-        print('before request')
+        # print('before request')
         r = requests.get(url=node + "/last_block")  # Get the last block
-        print('after request')
+        # print('after request')
         # Handle non-json response
         try:
             data = r.json()

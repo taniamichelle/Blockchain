@@ -95,6 +95,7 @@ blockchain = Blockchain()
 @app.route('/mine', methods=['POST'])
 def mine():
     # breakpoint()
+    data = request.get_json()
     required = ['proof', 'id']
     if not all(r in data for r in required):
         response = {'message': "Missing values."}
@@ -139,10 +140,10 @@ def last_block():
     return jsonify(response), 200
 
 
-# Run the program on port 5555
+# Run the program on port 5000
 if __name__ == '__main__':
     # set debug to true to autosave so you do not need to restart server
-    app.run(host='0.0.0.0', port=5555, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
 
 '''
 MY SOLUTION:
